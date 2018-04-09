@@ -3,8 +3,9 @@ package signalform
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/terraform/helper/schema"
 	"strings"
+
+	"github.com/hashicorp/terraform/helper/schema"
 )
 
 const (
@@ -14,6 +15,17 @@ const (
 func integrationResource() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
+			"synced": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				Description: "Whether the resource in SignalForm and SignalFx are identical or not. Used internally for syncing.",
+			},
+			"last_updated": &schema.Schema{
+				Type:        schema.TypeFloat,
+				Computed:    true,
+				Description: "Latest timestamp the resource was updated",
+			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
@@ -89,8 +101,9 @@ func integrationCreate(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return fmt.Errorf("Failed creating json payload: %s", err.Error())
 	}
+	url := fmt.Sprintf("%s?skipValidation=true", INTEGRATION_API_URL)
 
-	return resourceCreate(INTEGRATION_API_URL, config.AuthToken, payload, d)
+	return resourceCreate(url, config.AuthToken, payload, d)
 }
 
 func integrationRead(d *schema.ResourceData, meta interface{}) error {
