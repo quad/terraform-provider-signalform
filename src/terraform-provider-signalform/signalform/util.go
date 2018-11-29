@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/terraform/helper/schema"
 	"io/ioutil"
 	"math"
 	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/hashicorp/terraform/helper/schema"
 )
 
 const (
@@ -293,6 +294,19 @@ func validatePerSignalColor(v interface{}, k string) (we []string, errors []erro
 	if _, ok := PaletteColors[value]; !ok {
 		keys := make([]string, 0, len(PaletteColors))
 		for k := range PaletteColors {
+			keys = append(keys, k)
+		}
+		joinedColors := strings.Join(keys, ",")
+		errors = append(errors, fmt.Errorf("%s not allowed; must be either %s", value, joinedColors))
+	}
+	return
+}
+
+func validateFullPaletteColors(v interface{}, k string) (we []string, errors []error) {
+	value := v.(string)
+	if _, ok := FullPaletteColors[value]; !ok {
+		keys := make([]string, 0, len(FullPaletteColors))
+		for k := range FullPaletteColors {
 			keys = append(keys, k)
 		}
 		joinedColors := strings.Join(keys, ",")
