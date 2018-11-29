@@ -353,7 +353,7 @@ func timeChartResource() *schema.Resource {
 				Description:  "(LineChart by default) The default plot display style for the visualization. Must be \"LineChart\", \"AreaChart\", \"ColumnChart\", or \"Histogram\"",
 				ValidateFunc: validatePlotTypeTimeChart,
 			},
-			"histogram_options": {
+			"histogram_options": &schema.Schema{
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "Options specific to Histogram charts",
