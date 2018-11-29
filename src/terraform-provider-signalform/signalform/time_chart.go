@@ -31,27 +31,27 @@ var PaletteColors = map[string]int{
 }
 
 var FullPaletteColors = map[string]int{
-	"gray":       0,
-	"blue":       1,
-	"azure":      2,
-	"navy":       3,
-	"brown":      4,
-	"orange":     5,
-	"yellow":     6,
-	"magenta":    7,
-	"purple":     8,
-	"pink":       9,
-	"violet":     10,
-	"lilac":      11,
-	"iris":       12,
-	"emerald":    13,
-	"green":      14,
-	"aquamarine": 15,
-	"red":        16,
-	"yellow":     17,
-	"mustard":    18,
-	"chartreuse": 19,
-	"jade":       20,
+	"gray":        0,
+	"blue":        1,
+	"azure":       2,
+	"navy":        3,
+	"brown":       4,
+	"orange":      5,
+	"yellow":      6,
+	"magenta":     7,
+	"purple":      8,
+	"pink":        9,
+	"violet":      10,
+	"lilac":       11,
+	"iris":        12,
+	"emerald":     13,
+	"green":       14,
+	"aquamarine":  15,
+	"red":         16,
+	"gold":        17,
+	"greenyellow": 18,
+	"chartreuse":  19,
+	"jade":        20,
 }
 
 func resourceAxisMigrateState(v int, is *terraform.InstanceState, meta interface{}) (*terraform.InstanceState, error) {
@@ -360,9 +360,9 @@ func timeChartResource() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"color_theme": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Base color theme to use for the graph.",
+							Type:         schema.TypeString,
+							Optional:     true,
+							Description:  "Base color theme to use for the graph.",
 							ValidateFunc: validateFullPaletteColors,
 						},
 					},
@@ -633,10 +633,13 @@ func getTimeChartOptions(d *schema.ResourceData) map[string]interface{} {
 		} else if chartType == "Histogram" {
 			viz["histogramChartOptions"] = dataMarkersOption
 
-			if histogram_options, ok := d.Get("histogram_options"); ok {
-				if color_theme, ok := histogram_options.Get("color_theme").(string); ok {
-					if elem, ok := FullPaletteColors[val]; ok {
-						viz["histogramChartOptions"]["colorThemeIndex"] = color_theme
+			histogramChartOptions := make(map[string]interface{})
+			if histogram_options, ok := d.GetOk("histogram_options"); ok {
+				hOptions := histogram_options.(*schema.Set).List()[0].(map[string]interface{})
+				if color_theme, ok := hOptions["color_theme"].(string); ok {
+					if elem, ok := FullPaletteColors[color_theme]; ok {
+						histogramChartOptions["colorThemeIndex"] = elem
+						viz["histogramChartOptions"] = histogramChartOptions
 					}
 				}
 			}
