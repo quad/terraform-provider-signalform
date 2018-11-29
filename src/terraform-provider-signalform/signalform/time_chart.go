@@ -30,6 +30,30 @@ var PaletteColors = map[string]int{
 	"aquamarine": 15,
 }
 
+var FullPaletteColors = map[string]int{
+	"gray":       0,
+	"blue":       1,
+	"azure":      2,
+	"navy":       3,
+	"brown":      4,
+	"orange":     5,
+	"yellow":     6,
+	"magenta":    7,
+	"purple":     8,
+	"pink":       9,
+	"violet":     10,
+	"lilac":      11,
+	"iris":       12,
+	"emerald":    13,
+	"green":      14,
+	"aquamarine": 15,
+	"red":        16,
+	"yellow":     17,
+	"mustard":    18,
+	"chartreuse": 19,
+	"jade":       20,
+}
+
 func resourceAxisMigrateState(v int, is *terraform.InstanceState, meta interface{}) (*terraform.InstanceState, error) {
 	switch v {
 	case 0:
@@ -329,6 +353,21 @@ func timeChartResource() *schema.Resource {
 				Description:  "(LineChart by default) The default plot display style for the visualization. Must be \"LineChart\", \"AreaChart\", \"ColumnChart\", or \"Histogram\"",
 				ValidateFunc: validatePlotTypeTimeChart,
 			},
+			"histogram_options": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Options specific to Histogram charts",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"color_theme": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Base color theme to use for the graph.",
+							ValidateFunc: validateFullPaletteColors,
+						},
+					},
+				},
+			},
 			"viz_options": &schema.Schema{
 				Type:        schema.TypeSet,
 				Optional:    true,
@@ -584,12 +623,23 @@ func getTimeChartOptions(d *schema.ResourceData) map[string]interface{} {
 
 	dataMarkersOption := make(map[string]interface{})
 	dataMarkersOption["showDataMarkers"] = d.Get("show_data_markers").(bool)
+
 	if chartType, ok := d.GetOk("plot_type"); ok {
 		chartType := chartType.(string)
 		if chartType == "AreaChart" {
 			viz["areaChartOptions"] = dataMarkersOption
 		} else if chartType == "LineChart" {
 			viz["lineChartOptions"] = dataMarkersOption
+		} else if chartType == "Histogram" {
+			viz["histogramChartOptions"] = dataMarkersOption
+
+			if histogram_options, ok := d.Get("histogram_options"); ok {
+				if color_theme, ok := histogram_options.Get("color_theme").(string); ok {
+					if elem, ok := FullPaletteColors[val]; ok {
+						viz["histogramChartOptions"]["colorThemeIndex"] = color_theme
+					}
+				}
+			}
 		}
 	} else {
 		viz["lineChartOptions"] = dataMarkersOption
