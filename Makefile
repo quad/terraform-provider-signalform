@@ -2,7 +2,6 @@ PACKAGE := terraform-provider-signalform
 GOPATH  := $(shell pwd -L)
 BASE    := $(GOPATH)/src/$(PACKAGE)
 PATH    := $(GOPATH)/bin:$(PATH)
-GLIDE   := glide
 export GOPATH
 export PATH
 # unset GOROOT avoids: "go test error: cannot use matchString as type testing.testDeps in argument to testing.MainStart"
@@ -19,15 +18,7 @@ all: fmt .git/hooks/pre-commit test build itest_trusty itest_xenial
 
 .PHONY: fmt
 fmt:
-	go fmt ./...
-
-.PHONY: deps
-deps:
-	@echo Getting dependencies...
-	@go get github.com/Masterminds/glide
-	@cd src/github.com/Masterminds/glide && git checkout --quiet v0.12.3
-	@go build -o bin/glide github.com/Masterminds/glide/
-	@cd $(BASE) && $(GLIDE) install
+	cd $(BASE) && go fmt ./...
 
 .PHONY: clean
 clean:
@@ -58,8 +49,8 @@ binary:
 	make -C build binary
 
 .PHONY: test
-test: deps
-	cd $(BASE) && go test -v $$(glide novendor)
+test:
+	cd $(BASE) && go test -v ./...
 
 .PHONY: changelog
 changelog:
